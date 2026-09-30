@@ -19,7 +19,7 @@ board/cards/*.md  ->  runner  ->  claude -p "<card>"  ->  edit + build
 | Folder | What it is |
 |---|---|
 | `src/InvoiceApp` | The "product": a small WPF invoice editor with AutomationIds on every control. Ships with deliberate gaps that the cards describe. |
-| `src/UiMcpServer` | A minimal MCP server exposing Windows UI Automation as tools (find, click, type, read, screenshot). |
+| `src/UiMcpServer` | A minimal MCP server exposing Windows UI Automation as tools (find, click, type, read, screenshot). Speaks stdio by default; `--http [url]` serves the same tools over Streamable HTTP at `/mcp` (default `http://localhost:5081`) for clients that are not a child process, such as a runner in a container. |
 | `board/cards` | The cards: one markdown file per card, state in the frontmatter. |
 | `board/run.ps1` | The runner: picks a card, builds the prompt, starts the agent, moves the card on success. |
 
