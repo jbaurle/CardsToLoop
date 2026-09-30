@@ -1,0 +1,88 @@
+<Window x:Class="InvoiceApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Invoice Editor" Height="520" Width="760"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Customer -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Customer:" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" x:Name="CustomerNameTextBox"
+                     AutomationProperties.AutomationId="CustomerNameTextBox"
+                     VerticalContentAlignment="Center" Height="28"/>
+        </Grid>
+
+        <!-- Items -->
+        <DataGrid Grid.Row="1" x:Name="ItemsGrid"
+                  AutomationProperties.AutomationId="ItemsGrid"
+                  AutoGenerateColumns="False" CanUserAddRows="False"
+                  SelectionMode="Single" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="70"/>
+                <DataGridTextColumn Header="Unit price" Binding="{Binding UnitPrice, StringFormat=N2}" Width="100"/>
+                <DataGridTextColumn Header="Line total" Binding="{Binding LineTotal, StringFormat=N2}" Width="100" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Add / remove -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,12">
+            <TextBox x:Name="NewDescriptionTextBox"
+                     AutomationProperties.AutomationId="NewDescriptionTextBox"
+                     Width="260" Height="28" VerticalContentAlignment="Center"/>
+            <TextBox x:Name="NewQuantityTextBox"
+                     AutomationProperties.AutomationId="NewQuantityTextBox"
+                     Width="60" Height="28" Margin="8,0,0,0" VerticalContentAlignment="Center" Text="1"/>
+            <TextBox x:Name="NewUnitPriceTextBox"
+                     AutomationProperties.AutomationId="NewUnitPriceTextBox"
+                     Width="90" Height="28" Margin="8,0,0,0" VerticalContentAlignment="Center" Text="0"/>
+            <Button x:Name="AddItemButton"
+                    AutomationProperties.AutomationId="AddItemButton"
+                    Content="Add item" Margin="8,0,0,0" Padding="12,4" Click="AddItemButton_Click"/>
+            <Button x:Name="DeleteItemButton"
+                    AutomationProperties.AutomationId="DeleteItemButton"
+                    Content="Delete selected" Margin="8,0,0,0" Padding="12,4" Click="DeleteItemButton_Click"/>
+        </StackPanel>
+
+        <!-- Totals -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Label Content="Discount %:"/>
+                <TextBox x:Name="DiscountTextBox"
+                         AutomationProperties.AutomationId="DiscountTextBox"
+                         Width="60" Height="28" VerticalContentAlignment="Center" Text="0"
+                         TextChanged="DiscountTextBox_TextChanged"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Label Content="Subtotal:"/>
+                    <TextBlock x:Name="SubtotalText"
+                               AutomationProperties.AutomationId="SubtotalText"
+                               VerticalAlignment="Center" MinWidth="90" TextAlignment="Right" Text="0.00"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Label Content="Total:" FontWeight="Bold"/>
+                    <TextBlock x:Name="TotalText"
+                               AutomationProperties.AutomationId="TotalText"
+                               VerticalAlignment="Center" MinWidth="90" TextAlignment="Right"
+                               FontWeight="Bold" Text="0.00"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
