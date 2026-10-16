@@ -65,8 +65,10 @@ public partial class MainWindow : Window
             subtotal += item.LineTotal;
         }
         SubtotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
-        // NOTE: The discount is read but never applied on purpose - this is the bug the
-        // first card describes, and the agent run fixes it.
-        TotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
+        // An empty or non-numeric discount counts as 0.
+        var discountPercent = decimal.TryParse(DiscountTextBox.Text, NumberStyles.Number,
+            CultureInfo.CurrentCulture, out var d) ? d : 0m;
+        var total = subtotal - subtotal * discountPercent / 100m;
+        TotalText.Text = total.ToString("N2", CultureInfo.CurrentCulture);
     }
 }
