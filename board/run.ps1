@@ -68,6 +68,9 @@ Write-Host "starting run, log: $logPath"
 Push-Location $repoRoot
 try
 {
+    # claude writes warnings to stderr. With "Stop", Windows PowerShell turns them
+    # into a terminating error and the card would stay In Work.
+    $ErrorActionPreference = "Continue"
     $output = claude -p $prompt --mcp-config .mcp.json --strict-mcp-config 2>&1
     $output | Set-Content $logPath -Encoding UTF8
 }
