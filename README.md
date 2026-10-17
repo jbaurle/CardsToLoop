@@ -21,7 +21,10 @@ board/cards/*.md  ->  runner  ->  claude -p "<card>"  ->  edit + build
 | `src/InvoiceApp` | The "product": a small WPF invoice editor with AutomationIds on every control. Ships with deliberate gaps that the cards describe. |
 | `src/UiMcpServer` | A minimal MCP server exposing Windows UI Automation as tools (find, click, type, read, screenshot). Speaks stdio by default; `--http [url]` serves the same tools over Streamable HTTP at `/mcp` (default `http://localhost:5081`) for clients that are not a child process, such as a runner in a container. |
 | `board/cards` | The cards: one markdown file per card, state in the frontmatter. |
-| `board/run.ps1` | The runner: picks a card, builds the prompt, starts the agent, moves the card on success. |
+| `board/run.ps1` | The runner: sets the card to In Work, builds the prompt, starts the agent, sets the card to Done or Failed. |
+| `board/runs` | One log per run, the full output of the agent. |
+| `.mcp.json` | Tells Claude Code where the MCP server is. |
+| `.claude/rules` | Style rules for the code and the comments. The agent reads them on every run. |
 
 ## Requirements
 
@@ -32,5 +35,6 @@ board/cards/*.md  ->  runner  ->  claude -p "<card>"  ->  edit + build
 
 ```powershell
 dotnet build src/InvoiceApp/InvoiceApp.csproj
+dotnet build src/UiMcpServer/UiMcpServer.csproj
 ./board/run.ps1 board/cards/total-ignores-the-discount.md
 ```
