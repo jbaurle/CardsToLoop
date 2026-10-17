@@ -5,6 +5,9 @@ using System.Windows.Controls;
 
 namespace InvoiceApp;
 
+// The product the cards describe: an invoice with items, a discount and totals.
+// Every control has an AutomationId so the agent can drive it over UI Automation.
+// The app ships with gaps on purpose; each gap is a card in board/cards.
 public partial class MainWindow : Window
 {
     private readonly ObservableCollection<OrderItem> _items = new();
@@ -13,6 +16,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ItemsGrid.ItemsSource = _items;
+
+        // Two sample rows, so a run can read totals back before it types anything.
         _items.Add(new OrderItem { Description = "Widget", Quantity = 2, UnitPrice = 19.90m });
         _items.Add(new OrderItem { Description = "Gadget", Quantity = 1, UnitPrice = 49.00m });
         RecalculateTotals();
@@ -20,16 +25,17 @@ public partial class MainWindow : Window
 
     private void AddItemButton_Click(object sender, RoutedEventArgs e)
     {
-        // NOTE: Quantity and price are parsed without validation on purpose - a card
-        // in board/cards asks for input validation, and the agent run adds it.
-        var quantity = int.TryParse(NewQuantityTextBox.Text, out var q) ? q : 0;
-        var price = decimal.TryParse(NewUnitPriceTextBox.Text, NumberStyles.Number,
-            CultureInfo.CurrentCulture, out var p) ? p : 0m;
+        // NOTE: Quantity and price are not validated on purpose. TryParse leaves 0 when
+        // the text is empty or not a number, and the row is added anyway. The card
+        // validate-quantity-and-price asks for the check, and the agent run adds it.
+        int.TryParse(NewQuantityTextBox.Text, out var quantity);
+        decimal.TryParse(NewUnitPriceTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture,
+            out var unitPrice);
         _items.Add(new OrderItem
         {
             Description = NewDescriptionTextBox.Text,
             Quantity = quantity,
-            UnitPrice = price,
+            UnitPrice = unitPrice,
         });
         NewDescriptionTextBox.Clear();
         NewQuantityTextBox.Text = "1";
@@ -39,8 +45,8 @@ public partial class MainWindow : Window
 
     private void DeleteItemButton_Click(object sender, RoutedEventArgs e)
     {
-        // NOTE: Deletes without asking on purpose - a card asks for a confirmation
-        // dialog, and the agent run adds it.
+        // NOTE: Deletes without asking on purpose. The card delete-asks-for-confirmation
+        // asks for a confirmation dialog, and the agent run adds it.
         if (ItemsGrid.SelectedItem is OrderItem item)
         {
             _items.Remove(item);
@@ -55,6 +61,9 @@ public partial class MainWindow : Window
 
     private void RecalculateTotals()
     {
+        // XAML applies attributes in order. If Text and TextChanged of DiscountTextBox
+        // ever swap places, the handler fires during InitializeComponent, before the
+        // total fields below it exist.
         if (SubtotalText is null || TotalText is null)
         {
             return;
@@ -65,9 +74,10 @@ public partial class MainWindow : Window
             subtotal += item.LineTotal;
         }
         SubtotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
-        // An empty or non-numeric discount counts as 0.
-        var discountPercent = decimal.TryParse(DiscountTextBox.Text, NumberStyles.Number,
-            CultureInfo.CurrentCulture, out var d) ? d : 0m;
+
+        // An empty or non-numeric discount counts as 0; TryParse leaves 0 in that case.
+        decimal.TryParse(DiscountTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture,
+            out var discountPercent);
         var total = subtotal - subtotal * discountPercent / 100m;
         TotalText.Text = total.ToString("N2", CultureInfo.CurrentCulture);
     }

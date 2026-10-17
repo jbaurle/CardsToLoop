@@ -8,15 +8,21 @@ using ModelContextProtocol.Server;
 
 namespace UiMcpServer;
 
-/// <summary>
-/// Windows UI Automation exposed as MCP tools. Every tool addresses a top-level window by a
-/// title fragment and an element inside it by AutomationId first, Name second - so buttons
-/// of system dialogs (which have no AutomationId) stay reachable by their caption.
-/// </summary>
+// Windows UI Automation exposed as MCP tools. Every tool addresses a top-level window by a
+// fragment of its title and an element inside it by AutomationId first, Name second. The
+// Name fallback keeps the buttons of system dialogs reachable: they have only a caption.
 [McpServerToolType]
 public sealed class UiTools
 {
-    private static readonly JsonSerializerOptions _json = new() { WriteIndented = true };
+    // Limits for ui_find_elements. Both are generous for the invoice app and keep
+    // the answer short enough for the model's context.
+    private const int MaxWalkDepth = 8;
+    private const int MaxWalkResults = 300;
+
+    // ui_wait_for polls at this interval; UI Automation has no wait of its own.
+    private const int WaitPollIntervalMs = 250;
+
+    private static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
     [McpServerTool(Name = "ui_list_windows")]
     [Description("Lists all visible top-level windows: title, process id, automation id.")]
@@ -26,14 +32,20 @@ public sealed class UiTools
         foreach (AutomationElement window in AutomationElement.RootElement
                      .FindAll(TreeScope.Children, Condition.TrueCondition))
         {
+            // Windows without a title or off screen are helper windows of other processes.
             var info = window.Current;
             if (info.IsOffscreen || string.IsNullOrEmpty(info.Name))
             {
                 continue;
             }
-            windows.Add(new { title = info.Name, processId = info.ProcessId, automationId = info.AutomationId });
+            windows.Add(new
+            {
+                title = info.Name,
+                processId = info.ProcessId,
+                automationId = info.AutomationId,
+            });
         }
-        return JsonSerializer.Serialize(windows, _json);
+        return JsonSerializer.Serialize(windows, _jsonOptions);
     }
 
     [McpServerTool(Name = "ui_find_elements")]
@@ -44,7 +56,7 @@ public sealed class UiTools
         var window = FindWindow(windowTitle);
         var elements = new List<object>();
         Walk(window, 0, elements);
-        return JsonSerializer.Serialize(elements, _json);
+        return JsonSerializer.Serialize(elements, _jsonOptions);
     }
 
     [McpServerTool(Name = "ui_click")]
@@ -53,6 +65,8 @@ public sealed class UiTools
         [Description("Title fragment of the window")] string windowTitle,
         [Description("AutomationId or Name of the element")] string target)
     {
+        // Patterns first: they work while the window is covered or off screen. The mouse
+        // click is the fallback for elements that offer none of them.
         var element = FindTarget(FindWindow(windowTitle), target);
         if (element.TryGetCurrentPattern(InvokePattern.Pattern, out var invoke))
         {
@@ -119,8 +133,8 @@ public sealed class UiTools
         foreach (AutomationElement row in container.FindAll(TreeScope.Descendants,
                      new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)))
         {
-            if (!RowContainsText(row, rowText) ||
-                !row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var select))
+            if (!RowContainsText(row, rowText)
+                || !row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var select))
             {
                 continue;
             }
@@ -137,6 +151,8 @@ public sealed class UiTools
         [Description("AutomationId or Name of the element")] string target,
         [Description("Timeout in milliseconds, default 5000")] int timeoutMs = 5000)
     {
+        // FindWindow and FindTarget throw while the window or the element is missing.
+        // That exception is the "not yet" signal of the loop.
         var deadline = Environment.TickCount64 + timeoutMs;
         while (Environment.TickCount64 < deadline)
         {
@@ -147,7 +163,7 @@ public sealed class UiTools
             }
             catch (InvalidOperationException)
             {
-                Thread.Sleep(250);
+                Thread.Sleep(WaitPollIntervalMs);
             }
         }
         throw new TimeoutException($"'{target}' did not appear within {timeoutMs} ms.");
@@ -159,6 +175,8 @@ public sealed class UiTools
         [Description("Title fragment of the window")] string windowTitle,
         [Description("Path of the PNG to write; defaults to a temp file")] string? filePath = null)
     {
+        // PrintWindow renders the window itself, so windows in front of it do not end up
+        // in the image. Sizes are physical pixels; see SetProcessDPIAware in Program.cs.
         var window = FindWindow(windowTitle);
         var handle = new IntPtr(window.Current.NativeWindowHandle);
         NativeMethods.GetWindowRect(handle, out var rect);
@@ -168,7 +186,7 @@ public sealed class UiTools
         using (var graphics = Graphics.FromImage(bitmap))
         {
             var deviceContext = graphics.GetHdc();
-            NativeMethods.PrintWindow(handle, deviceContext, 2); // 2 = PW_RENDERFULLCONTENT
+            NativeMethods.PrintWindow(handle, deviceContext, NativeMethods.PrintWindowRenderFullContent);
             graphics.ReleaseHdc(deviceContext);
         }
         var path = filePath ?? Path.Combine(Path.GetTempPath(), $"ui-{Environment.TickCount64}.png");
@@ -208,7 +226,7 @@ public sealed class UiTools
 
     private static void Walk(AutomationElement element, int depth, List<object> results)
     {
-        if (depth > 8 || results.Count >= 300)
+        if (depth > MaxWalkDepth || results.Count >= MaxWalkResults)
         {
             return;
         }
@@ -235,6 +253,7 @@ public sealed class UiTools
 
     private static bool RowContainsText(AutomationElement row, string rowText)
     {
+        // Depending on the cell, its text sits in the Value pattern or in the Name property.
         foreach (AutomationElement cell in row.FindAll(TreeScope.Descendants, Condition.TrueCondition))
         {
             var cellText = cell.TryGetCurrentPattern(ValuePattern.Pattern, out var value)
@@ -248,6 +267,7 @@ public sealed class UiTools
         return false;
     }
 
+    // Uniform answer of the action tools. The read tools return their text directly.
     private static string Ok(string message)
     {
         return JsonSerializer.Serialize(new { ok = true, message });
