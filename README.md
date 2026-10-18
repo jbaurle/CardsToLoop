@@ -38,3 +38,7 @@ dotnet build src/InvoiceApp/InvoiceApp.csproj
 dotnet build src/UiMcpServer/UiMcpServer.csproj
 ./board/run.ps1 board/cards/total-ignores-the-discount.md
 ```
+
+## Articles
+
+- [How to let Claude Code fix and test bugs in a WPF application](https://www.parago.de/en/blog/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application/), October 2026, also as [PDF](docs/article-2-claude-code.pdf). The tag `article-2-run` marks the state after the agent run the article shows.
