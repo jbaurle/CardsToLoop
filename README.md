@@ -56,4 +56,4 @@ permissions in `.claude/settings.json` are ignored and the run fails.
 
 ## Articles
 
-- [How to let Claude Code fix and test bugs in a WPF application](https://www.parago.de/en/blog/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application/), October 2026, also as [PDF](docs/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application.pdf). The tag `article-2-run` marks the state after the agent run the article shows.
+- [How to let Claude Code fix and test bugs in a WPF application](https://www.parago.de/en/blog/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application/), October 2026, also as [PDF](docs/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application.pdf). The tag `discount-card-done` marks the state after the agent run the article shows.
