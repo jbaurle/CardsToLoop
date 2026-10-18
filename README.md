@@ -1,8 +1,8 @@
 # CardsToLoop
 
 A minimal, self-contained demo of a card-driven development loop: a Kanban card
-describes a change, an AI agent implements it in a real WPF app, verifies it by
-driving the app's UI, and commits. The card moves on.
+describes a bug fix or a new feature, an AI agent implements it in a real WPF app,
+verifies it by driving the app's UI, and commits. The card moves on.
 
 The loop:
 
