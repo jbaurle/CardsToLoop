@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Text.Json;
 using System.Windows.Automation;
+using ModelContextProtocol;
 using ModelContextProtocol.Server;
 
 namespace UiMcpServer;
@@ -11,6 +12,8 @@ namespace UiMcpServer;
 // Windows UI Automation exposed as MCP tools. Every tool addresses a top-level window by a
 // fragment of its title and an element inside it by AutomationId first, Name second. The
 // Name fallback keeps the buttons of system dialogs reachable: they have only a caption.
+// Errors are thrown as McpException, because the SDK passes only that message on to the
+// agent. Any other exception reaches the agent as a general error without the reason.
 [McpServerToolType]
 public sealed class UiTools
 {
@@ -98,7 +101,7 @@ public sealed class UiTools
         var element = FindTarget(FindWindow(windowTitle), target);
         if (!element.TryGetCurrentPattern(ValuePattern.Pattern, out var value))
         {
-            throw new InvalidOperationException($"'{target}' does not support the Value pattern.");
+            throw new McpException($"'{target}' does not support the Value pattern.");
         }
         ((ValuePattern)value).SetValue(text);
         return Ok($"set '{target}' to \"{text}\"");
@@ -141,7 +144,7 @@ public sealed class UiTools
             ((SelectionItemPattern)select).Select();
             return Ok($"selected row containing \"{rowText}\"");
         }
-        throw new InvalidOperationException($"No row containing \"{rowText}\" found in '{target}'.");
+        throw new McpException($"No row containing \"{rowText}\" found in '{target}'.");
     }
 
     [McpServerTool(Name = "ui_wait_for")]
@@ -161,12 +164,12 @@ public sealed class UiTools
                 FindTarget(FindWindow(windowTitle), target);
                 return Ok($"'{target}' exists");
             }
-            catch (InvalidOperationException)
+            catch (McpException)
             {
                 Thread.Sleep(WaitPollIntervalMs);
             }
         }
-        throw new TimeoutException($"'{target}' did not appear within {timeoutMs} ms.");
+        throw new McpException($"'{target}' did not appear within {timeoutMs} ms.");
     }
 
     [McpServerTool(Name = "ui_screenshot")]
@@ -204,7 +207,7 @@ public sealed class UiTools
                 return window;
             }
         }
-        throw new InvalidOperationException($"No window with \"{windowTitle}\" in its title.");
+        throw new McpException($"No window with \"{windowTitle}\" in its title.");
     }
 
     private static AutomationElement FindTarget(AutomationElement window, string target)
@@ -221,7 +224,7 @@ public sealed class UiTools
         {
             return byName;
         }
-        throw new InvalidOperationException($"No element with AutomationId or Name '{target}'.");
+        throw new McpException($"No element with AutomationId or Name '{target}'.");
     }
 
     private static void Walk(AutomationElement element, int depth, List<object> results)
