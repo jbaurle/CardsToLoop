@@ -74,11 +74,8 @@ public partial class MainWindow : Window
             subtotal += item.LineTotal;
         }
         SubtotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
-
-        // An empty or non-numeric discount counts as 0; TryParse leaves 0 in that case.
-        decimal.TryParse(DiscountTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture,
-            out var discountPercent);
-        var total = subtotal - subtotal * discountPercent / 100m;
-        TotalText.Text = total.ToString("N2", CultureInfo.CurrentCulture);
+        // NOTE: The discount is read but not applied on purpose; the total equals the subtotal.
+        // The card total-ignores-the-discount describes the bug, and the agent run fixes it.
+        TotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
     }
 }
