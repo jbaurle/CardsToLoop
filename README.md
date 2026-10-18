@@ -7,11 +7,22 @@ verifies it by driving the app's UI, and commits. The card moves on.
 The loop:
 
 ```
-board/cards/*.md  ->  runner  ->  claude -p "<card>"  ->  edit + build
-                                        |
-                                  MCP UI tools  ->  click, type, read back
-                                        |
-                                  commit  ->  card state: Done
+board/cards/<card>.md
+        │
+        ▼
+board/run.ps1           sets the card to In Work and builds the prompt
+        │
+        ▼
+claude -p "<prompt>"    edits src/InvoiceApp and rebuilds it
+        │
+        ▼
+ui_* MCP tools          starts the app, clicks, types, reads the result back
+        │
+        ▼
+git commit              only when every acceptance criterion passed live
+        │
+        ▼
+card state Done         or Failed, taken from the RESULT line of the run
 ```
 
 ## Parts
