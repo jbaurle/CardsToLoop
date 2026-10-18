@@ -25,6 +25,7 @@ board/cards/*.md  ->  runner  ->  claude -p "<card>"  ->  edit + build
 | `board/runs` | One log per run, the full output of the agent. |
 | `.mcp.json` | Tells Claude Code where the MCP server is. |
 | `.claude/rules` | Style rules for the code and the comments. The agent reads them on every run. |
+| `docs` | The articles as PDF. |
 
 ## Requirements
 
@@ -39,6 +40,9 @@ dotnet build src/UiMcpServer/UiMcpServer.csproj
 ./board/run.ps1 board/cards/total-ignores-the-discount.md
 ```
 
+Open the folder once in Claude Code and accept the trust dialog. Otherwise the
+permissions in `.claude/settings.json` are ignored and the run fails.
+
 ## Articles
 
-- [How to let Claude Code fix and test bugs in a WPF application](https://www.parago.de/en/blog/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application/), October 2026, also as [PDF](docs/article-2-claude-code.pdf). The tag `article-2-run` marks the state after the agent run the article shows.
+- [How to let Claude Code fix and test bugs in a WPF application](https://www.parago.de/en/blog/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application/), October 2026, also as [PDF](docs/how-to-let-claude-code-fix-and-test-bugs-in-a-wpf-application.pdf). The tag `article-2-run` marks the state after the agent run the article shows.
