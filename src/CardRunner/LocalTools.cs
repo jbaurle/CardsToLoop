@@ -33,10 +33,10 @@ public sealed class LocalTools
         yield return AIFunctionFactory.Create(ListFiles, "list_files");
         yield return AIFunctionFactory.Create(ReadFile, "read_file");
         yield return AIFunctionFactory.Create(WriteFile, "write_file");
-        yield return AIFunctionFactory.Create(BuildApp, "build_app");
+        yield return AIFunctionFactory.Create(BuildAppAsync, "build_app");
         yield return AIFunctionFactory.Create(StartApp, "start_app");
         yield return AIFunctionFactory.Create(StopApp, "stop_app");
-        yield return AIFunctionFactory.Create(GitCommit, "git_commit");
+        yield return AIFunctionFactory.Create(GitCommitAsync, "git_commit");
     }
 
     [Description("Lists the files under a folder of the repository, one path per line relative to the repository root. bin, obj and .vs are skipped.")]
@@ -76,9 +76,9 @@ public sealed class LocalTools
     }
 
     [Description("Builds src/InvoiceApp with dotnet build. Call stop_app first, the build fails while the exe runs. Returns the errors and warnings of the build.")]
-    public string BuildApp()
+    public async Task<string> BuildAppAsync()
     {
-        var (exitCode, output) = Run("dotnet", $"build {AppProject}", BuildTimeoutMs);
+        var (exitCode, output) = await RunAsync("dotnet", $"build {AppProject}", BuildTimeoutMs);
         var lines = output.Split('\n').Select(line => line.TrimEnd()).Where(line => line.Length > 0).ToList();
         var relevant = lines.Where(line => line.Contains("error", StringComparison.OrdinalIgnoreCase)
             || line.Contains("warning", StringComparison.OrdinalIgnoreCase));
@@ -116,7 +116,7 @@ public sealed class LocalTools
     }
 
     [Description("Stages the changed files under src/InvoiceApp and commits them. The first line of the message is 'card: <title>', the body says what changed and how it was verified. Returns the commit hash.")]
-    public string GitCommit(
+    public async Task<string> GitCommitAsync(
         [Description("The complete commit message, first line and body")] string message)
     {
         var messageFile = Path.GetTempFileName();
@@ -124,21 +124,21 @@ public sealed class LocalTools
 
         try
         {
-            var (addCode, addOutput) = Run("git", $"add {AppFolder}", GitTimeoutMs);
+            var (addCode, addOutput) = await RunAsync("git", $"add {AppFolder}", GitTimeoutMs);
 
             if (addCode != 0)
             {
                 throw new InvalidOperationException("git add failed: " + addOutput);
             }
 
-            var (commitCode, commitOutput) = Run("git", $"commit -F \"{messageFile}\"", GitTimeoutMs);
+            var (commitCode, commitOutput) = await RunAsync("git", $"commit -F \"{messageFile}\"", GitTimeoutMs);
 
             if (commitCode != 0)
             {
                 throw new InvalidOperationException("git commit failed: " + commitOutput);
             }
 
-            var (_, hash) = Run("git", "rev-parse --short HEAD", GitTimeoutMs);
+            var (_, hash) = await RunAsync("git", "rev-parse --short HEAD", GitTimeoutMs);
             return $"committed {hash.Trim()}";
         }
         finally
@@ -164,7 +164,7 @@ public sealed class LocalTools
         return fullPath;
     }
 
-    private (int ExitCode, string Output) Run(string fileName, string arguments, int timeoutMs)
+    private async Task<(int ExitCode, string Output)> RunAsync(string fileName, string arguments, int timeoutMs)
     {
         var startInfo = new ProcessStartInfo(fileName, arguments)
         {
@@ -177,13 +177,18 @@ public sealed class LocalTools
         using var process = Process.Start(startInfo)!;
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
+        using var timeout = new CancellationTokenSource(timeoutMs);
 
-        if (!process.WaitForExit(timeoutMs))
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
         {
             process.Kill(entireProcessTree: true);
             throw new TimeoutException($"{fileName} {arguments} did not finish within {timeoutMs / 1000} seconds.");
         }
 
-        return (process.ExitCode, output.Result + error.Result);
+        return (process.ExitCode, await output + await error);
     }
 }
