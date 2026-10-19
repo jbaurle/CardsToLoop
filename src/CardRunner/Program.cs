@@ -3,18 +3,18 @@ using Anthropic;
 using CardRunner;
 using Microsoft.Extensions.AI;
 
-// Runs one card through the agent loop, same contract as board/run.ps1: card to In Work,
-// system prompt plus card to the model, tools until the final answer, card to Done or
-// Failed from its RESULT line. Exit code 0 for done, 1 for failed, 2 when the run itself
-// broke before the model could answer.
+// Runs one card through the agent loop, same contract as board/run.ps1: card to In Work, system
+// prompt plus card to the model, tools until the final answer, card to Done or Failed from its
+// RESULT line. Exit code 0 for done, 1 for failed, 2 when the run itself broke before the
+// model could answer.
 //
 // Settings come from the environment:
 //   ANTHROPIC_API_KEY       read by the Anthropic SDK
 //   RUNNER_MODEL            default claude-sonnet-5-5
 //   RUNNER_MAX_ITERATIONS   model rounds per run, default 60
 //   RUNNER_MAX_TOKENS       input plus output tokens per run, default 400000
-//   RUNNER_UI_SERVER        path to UiMcpServer.exe, relative to the repository root, or
-//                           the http:// address of a server started with --http
+//   RUNNER_UI_SERVER        path to UiMcpServer.exe, relative to the repository root,
+//                           or the http:// address of a server started with --http
 const string DefaultModel = "claude-sonnet-5-5";
 const string DefaultUiServer = "src/UiMcpServer/bin/Debug/net8.0-windows/UiMcpServer.exe";
 const int DefaultMaxIterations = 60;
@@ -57,8 +57,8 @@ try
     tools.AddRange((await uiServer.ListToolsAsync()).Select(tool => new LoggedFunction(tool, log)));
     tools.AddRange(new LocalTools(repoRoot).All().Select(tool => new LoggedFunction(tool, log)));
 
-    // The function-invoking client is the loop: it calls the model, runs every requested
-    // tool, appends the results and calls the model again until the answer is plain text.
+    // The function-invoking client is the loop: it calls the model, runs every requested tool,
+    // appends the results and calls the model again until the answer is plain text.
     var client = rounds.AsBuilder()
         .UseFunctionInvocation(configure: options =>
         {
@@ -74,6 +74,7 @@ try
     };
 
     log.Write("start", new { card = card.Slug, model, maxIterations, maxTokens, tools = tools.Select(tool => tool.Name) });
+
     // No temperature: the Claude 5 models reject the parameter.
     var options = new ChatOptions { Tools = tools, MaxOutputTokens = MaxOutputTokens };
     var response = await client.GetResponseAsync(messages, options);
@@ -87,6 +88,7 @@ catch (Exception exception)
 }
 
 stopwatch.Stop();
+
 log.Write("result", new
 {
     done = result.Done,

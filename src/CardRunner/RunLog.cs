@@ -3,8 +3,8 @@ using System.Text.Json;
 
 namespace CardRunner;
 
-// One JSON object per line in board/runs/<slug>-<time>.jsonl: the start, every model
-// round, every tool call and the result. The file is the only record of what the model did.
+// One JSON object per line in board/runs/<slug>-<time>.jsonl: the start, every model round,
+// every tool call and the result. The file is the only record of what the model did.
 public sealed class RunLog : IDisposable
 {
     private static readonly JsonSerializerOptions _jsonOptions = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };

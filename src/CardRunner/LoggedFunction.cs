@@ -5,10 +5,10 @@ using Microsoft.Extensions.AI;
 namespace CardRunner;
 
 // Wraps every tool, UI and local alike: logs the call with arguments, duration and result,
-// unwraps an MCP result to its text and cuts a result above the limit. The cut is named in
-// the text, so the model can ask for less next time, for instance one window instead of all.
-// Without the unwrapping the model would see the MCP text as a JSON object with escaped
-// quotes inside, three times the tokens for the same content.
+// unwraps an MCP result to its text and cuts a result above the limit. The cut is named
+// in the text, so the model can ask for less next time, for instance one window instead
+// of all. Without the unwrapping the model would see the MCP text as a JSON object with
+// escaped quotes inside, three times the tokens for the same content.
 public sealed class LoggedFunction : DelegatingAIFunction
 {
     private const int MaxResultLength = 4000;

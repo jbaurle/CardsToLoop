@@ -3,9 +3,9 @@ using ModelContextProtocol.Client;
 
 namespace CardRunner;
 
-// The connection to the UiMcpServer: a child process over stdio when the setting is a
-// path, Streamable HTTP when it is an address. The tools come back as AIFunctions and go
-// into the same list as the local ones; the model does not see the difference.
+// The connection to the UiMcpServer: a child process over stdio when the setting is a path,
+// Streamable HTTP when it is an address. The tools come back as AIFunctions and go into
+// the same list as the local ones; the model does not see the difference.
 public sealed class UiServer : IAsyncDisposable
 {
     private readonly McpClient _client;

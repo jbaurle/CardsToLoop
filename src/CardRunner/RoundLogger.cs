@@ -11,19 +11,20 @@ public sealed class RoundLogger : DelegatingChatClient
     private readonly RunLog _log;
     private readonly long _maxTokens;
 
-    public RoundLogger(IChatClient inner, RunLog log, long maxTokens) : base(inner)
-    {
-        _log = log;
-        _maxTokens = maxTokens;
-    }
-
     public int Rounds { get; private set; }
 
     public long InputTokens { get; private set; }
 
     public long OutputTokens { get; private set; }
 
-    public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public RoundLogger(IChatClient inner, RunLog log, long maxTokens) : base(inner)
+    {
+        _log = log;
+        _maxTokens = maxTokens;
+    }
+
+    public override async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
         Rounds++;
         var stopwatch = Stopwatch.StartNew();
@@ -32,6 +33,7 @@ public sealed class RoundLogger : DelegatingChatClient
         var outputTokens = response.Usage?.OutputTokenCount ?? 0;
         InputTokens += inputTokens;
         OutputTokens += outputTokens;
+
         _log.Write("round", new
         {
             round = Rounds,

@@ -4,9 +4,9 @@ using Microsoft.Extensions.AI;
 
 namespace CardRunner;
 
-// The tools Claude Code brings along and the runner has to provide itself: files, build,
-// start and stop of the app, commit. Fixed commands instead of a shell: the model runs only
-// what is here. Reads stay under src/ and .claude/rules/, writes under src/InvoiceApp/.
+// The tools Claude Code brings along and the runner has to provide itself: files, build, start
+// and stop of the app, commit. Fixed commands instead of a shell: the model runs only what is
+// here. Reads stay under src/ and .claude/rules/, writes under src/InvoiceApp/.
 public sealed class LocalTools
 {
     private const string AppFolder = "src/InvoiceApp";
@@ -80,7 +80,8 @@ public sealed class LocalTools
     {
         var (exitCode, output) = Run("dotnet", $"build {AppProject}", BuildTimeoutMs);
         var lines = output.Split('\n').Select(line => line.TrimEnd()).Where(line => line.Length > 0).ToList();
-        var relevant = lines.Where(line => line.Contains("error", StringComparison.OrdinalIgnoreCase) || line.Contains("warning", StringComparison.OrdinalIgnoreCase));
+        var relevant = lines.Where(line => line.Contains("error", StringComparison.OrdinalIgnoreCase)
+            || line.Contains("warning", StringComparison.OrdinalIgnoreCase));
         var summary = exitCode == 0 ? "Build succeeded." : $"Build failed with exit code {exitCode}.";
         return summary + "\n" + string.Join("\n", relevant.Distinct().Take(BuildOutputLines));
     }
@@ -172,6 +173,7 @@ public sealed class LocalTools
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
         using var process = Process.Start(startInfo)!;
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();

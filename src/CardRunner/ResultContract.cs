@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace CardRunner;
 
+// The outcome of a run. Reason is empty when the card is done.
 public sealed record RunResult(bool Done, string Reason);
 
 // The contract between prompt and runner: the last RESULT line of the final answer
