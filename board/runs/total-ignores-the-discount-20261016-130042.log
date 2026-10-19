@@ -1,0 +1,13 @@
+﻿Committed as 26b1890. Only the source file went in; the card file edit from the runner stays in the working tree.
+
+Change: `MainWindow.xaml.cs:68` now parses the discount box with the current culture, falls back to 0 for empty or non-numeric input, and sets the total to subtotal minus that share.
+
+Verified live on the rebuilt exe through the UI tools:
+- Before the fix, discount 10 on the default items left the total at 88,80, equal to the subtotal.
+- One item of 100.00 with discount 10 shows total 90,00.
+- Empty discount and "abc" both show total 100,00, no error dialog appeared.
+- Subtotal stayed at 100,00 in every case.
+
+Screenshots are in the temp folder as total-ignores-the-discount-before.png and -after.png, kept out of board/ per the rules. The app is stopped.
+
+RESULT: done
