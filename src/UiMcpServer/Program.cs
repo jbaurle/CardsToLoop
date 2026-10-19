@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ModelContextProtocol.AspNetCore;
 using UiMcpServer;
 
 // UI Automation reports physical pixels only to a DPI-aware process; without this,
@@ -18,8 +17,7 @@ NativeMethods.SetProcessDPIAware();
 // do not work from a service or a container.
 if (args.Contains("--http"))
 {
-    var url = args.SkipWhile(a => a != "--http").Skip(1).FirstOrDefault(a => a.StartsWith("http"))
-              ?? "http://localhost:5081";
+    var url = args.SkipWhile(a => a != "--http").Skip(1).FirstOrDefault(a => a.StartsWith("http")) ?? "http://localhost:5081";
 
     var builder = WebApplication.CreateBuilder(args);
     builder.Logging.ClearProviders();

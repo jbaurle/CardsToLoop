@@ -33,8 +33,7 @@ public sealed class UiTools
     {
         var windows = new List<object>();
 
-        foreach (AutomationElement window in AutomationElement.RootElement
-                     .FindAll(TreeScope.Children, Condition.TrueCondition))
+        foreach (AutomationElement window in AutomationElement.RootElement.FindAll(TreeScope.Children, Condition.TrueCondition))
         {
             // Windows without a title or off screen are helper windows of other processes.
             var info = window.Current;
@@ -219,8 +218,7 @@ public sealed class UiTools
 
     private static AutomationElement FindWindow(string windowTitle)
     {
-        foreach (AutomationElement window in AutomationElement.RootElement
-                     .FindAll(TreeScope.Children, Condition.TrueCondition))
+        foreach (AutomationElement window in AutomationElement.RootElement.FindAll(TreeScope.Children, Condition.TrueCondition))
         {
             if (window.Current.Name.Contains(windowTitle, StringComparison.OrdinalIgnoreCase))
             {
@@ -233,16 +231,14 @@ public sealed class UiTools
 
     private static AutomationElement FindTarget(AutomationElement window, string target)
     {
-        var byId = window.FindFirst(TreeScope.Descendants,
-            new PropertyCondition(AutomationElement.AutomationIdProperty, target));
+        var byId = window.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, target));
 
         if (byId is not null)
         {
             return byId;
         }
 
-        var byName = window.FindFirst(TreeScope.Descendants,
-            new PropertyCondition(AutomationElement.NameProperty, target));
+        var byName = window.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.NameProperty, target));
 
         if (byName is not null)
         {
@@ -272,9 +268,7 @@ public sealed class UiTools
                     controlType = info.ControlType.ProgrammaticName.Replace("ControlType.", string.Empty),
                     automationId = info.AutomationId,
                     name = info.Name,
-                    value = child.TryGetCurrentPattern(ValuePattern.Pattern, out var value)
-                        ? ((ValuePattern)value).Current.Value
-                        : null,
+                    value = child.TryGetCurrentPattern(ValuePattern.Pattern, out var value) ? ((ValuePattern)value).Current.Value : null,
                 });
             }
 
@@ -288,9 +282,7 @@ public sealed class UiTools
         // Depending on the cell, its text sits in the Value pattern or in the Name property.
         foreach (AutomationElement cell in row.FindAll(TreeScope.Descendants, Condition.TrueCondition))
         {
-            var cellText = cell.TryGetCurrentPattern(ValuePattern.Pattern, out var value)
-                ? ((ValuePattern)value).Current.Value
-                : cell.Current.Name;
+            var cellText = cell.TryGetCurrentPattern(ValuePattern.Pattern, out var value) ? ((ValuePattern)value).Current.Value : cell.Current.Name;
 
             if (cellText?.Contains(rowText, StringComparison.OrdinalIgnoreCase) == true)
             {

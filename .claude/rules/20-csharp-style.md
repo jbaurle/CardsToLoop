@@ -18,10 +18,12 @@ it cannot express.
     as `RecalculateTotals()`, stand alone, also after a single statement.
   - Single-line statements that form one unit stay together: two sample rows, three resets.
   - No blank line directly after `{` or before `}`.
-- A statement stays on one line up to 120 characters; argument lists are not wrapped for
+- A statement stays on one line up to 160 characters; argument lists are not wrapped for
   length alone. Longer statements break at a seam: before a chained `.Call()`, `??`, `?`, `:`,
   `&&`, `||`, the operator starts the next line; or after a comma, the remaining arguments on
-  one continuation line. `[Description]` strings never wrap.
+  one continuation line. Exceptions: a configuration chain such as `AddMcpServer().With…()`
+  keeps one call per line; parameters with a `[Description]` stay one per line;
+  `[Description]` strings never wrap.
 - Member order: constants → static fields → instance fields → events → properties →
   constructor → public methods → event handlers → private methods.
 - File ends with the closing brace and one newline, no blank line after it.
