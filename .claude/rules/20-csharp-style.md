@@ -9,9 +9,19 @@ it cannot express.
 - Allman braces. Braces on every `if`, `else`, loop and `using`, even for one statement.
 - Block bodies for methods and constructors; expression bodies for properties and accessors.
   A setter with more than one statement gets a block over several lines.
-- No `#region`. One blank line between members. Inside a method, blank lines only between
-  logical units; statements that form one unit stay together.
-- Wrapped expressions start the next line with the operator.
+- No `#region`. One blank line between members, never two.
+- Blank lines inside a method:
+  - A block (`if`, loop, `using`, `try`) gets a blank line before and after it, also when it
+    is a guard clause or holds one statement. The same for a multi-line initializer.
+  - A comment inside a method starts a unit: blank line before it, none after it.
+  - `InitializeComponent()` at the start and the call that finishes the work at the end, such
+    as `RecalculateTotals()`, stand alone, also after a single statement.
+  - Single-line statements that form one unit stay together: two sample rows, three resets.
+  - No blank line directly after `{` or before `}`.
+- A statement stays on one line up to 120 characters; argument lists are not wrapped for
+  length alone. Longer statements break at a seam: before a chained `.Call()`, `??`, `?`, `:`,
+  `&&`, `||`, the operator starts the next line; or after a comma, the remaining arguments on
+  one continuation line. `[Description]` strings never wrap.
 - Member order: constants → static fields → instance fields → events → properties →
   constructor → public methods → event handlers → private methods.
 - File ends with the closing brace and one newline, no blank line after it.

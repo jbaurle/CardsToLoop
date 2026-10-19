@@ -32,15 +32,18 @@ public sealed class UiTools
     public static string ListWindows()
     {
         var windows = new List<object>();
+
         foreach (AutomationElement window in AutomationElement.RootElement
                      .FindAll(TreeScope.Children, Condition.TrueCondition))
         {
             // Windows without a title or off screen are helper windows of other processes.
             var info = window.Current;
+
             if (info.IsOffscreen || string.IsNullOrEmpty(info.Name))
             {
                 continue;
             }
+
             windows.Add(new
             {
                 title = info.Name,
@@ -48,6 +51,7 @@ public sealed class UiTools
                 automationId = info.AutomationId,
             });
         }
+
         return JsonSerializer.Serialize(windows, _jsonOptions);
     }
 
@@ -71,21 +75,25 @@ public sealed class UiTools
         // Patterns first: they work while the window is covered or off screen. The mouse
         // click is the fallback for elements that offer none of them.
         var element = FindTarget(FindWindow(windowTitle), target);
+
         if (element.TryGetCurrentPattern(InvokePattern.Pattern, out var invoke))
         {
             ((InvokePattern)invoke).Invoke();
             return Ok($"invoked '{target}'");
         }
+
         if (element.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var select))
         {
             ((SelectionItemPattern)select).Select();
             return Ok($"selected '{target}'");
         }
+
         if (element.TryGetCurrentPattern(TogglePattern.Pattern, out var toggle))
         {
             ((TogglePattern)toggle).Toggle();
             return Ok($"toggled '{target}'");
         }
+
         var point = element.GetClickablePoint();
         NativeMethods.ClickAt((int)point.X, (int)point.Y);
         return Ok($"mouse-clicked '{target}' at {(int)point.X},{(int)point.Y}");
@@ -99,10 +107,12 @@ public sealed class UiTools
         [Description("The new text")] string text)
     {
         var element = FindTarget(FindWindow(windowTitle), target);
+
         if (!element.TryGetCurrentPattern(ValuePattern.Pattern, out var value))
         {
             throw new McpException($"'{target}' does not support the Value pattern.");
         }
+
         ((ValuePattern)value).SetValue(text);
         return Ok($"set '{target}' to \"{text}\"");
     }
@@ -114,14 +124,17 @@ public sealed class UiTools
         [Description("AutomationId or Name of the element")] string target)
     {
         var element = FindTarget(FindWindow(windowTitle), target);
+
         if (element.TryGetCurrentPattern(ValuePattern.Pattern, out var value))
         {
             return ((ValuePattern)value).Current.Value;
         }
+
         if (element.TryGetCurrentPattern(TextPattern.Pattern, out var text))
         {
             return ((TextPattern)text).DocumentRange.GetText(-1);
         }
+
         return element.Current.Name;
     }
 
@@ -133,17 +146,20 @@ public sealed class UiTools
         [Description("Text that identifies the row")] string rowText)
     {
         var container = FindTarget(FindWindow(windowTitle), target);
+
         foreach (AutomationElement row in container.FindAll(TreeScope.Descendants,
                      new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.DataItem)))
         {
-            if (!RowContainsText(row, rowText)
-                || !row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var select))
+            if (!RowContainsText(row, rowText) || !row.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var select))
             {
                 continue;
             }
+
             ((SelectionItemPattern)select).Select();
+
             return Ok($"selected row containing \"{rowText}\"");
         }
+
         throw new McpException($"No row containing \"{rowText}\" found in '{target}'.");
     }
 
@@ -157,6 +173,7 @@ public sealed class UiTools
         // FindWindow and FindTarget throw while the window or the element is missing.
         // That exception is the "not yet" signal of the loop.
         var deadline = Environment.TickCount64 + timeoutMs;
+
         while (Environment.TickCount64 < deadline)
         {
             try
@@ -169,6 +186,7 @@ public sealed class UiTools
                 Thread.Sleep(WaitPollIntervalMs);
             }
         }
+
         throw new McpException($"'{target}' did not appear within {timeoutMs} ms.");
     }
 
@@ -186,12 +204,14 @@ public sealed class UiTools
         var width = rect.Right - rect.Left;
         var height = rect.Bottom - rect.Top;
         using var bitmap = new Bitmap(width, height);
+
         using (var graphics = Graphics.FromImage(bitmap))
         {
             var deviceContext = graphics.GetHdc();
             NativeMethods.PrintWindow(handle, deviceContext, NativeMethods.PrintWindowRenderFullContent);
             graphics.ReleaseHdc(deviceContext);
         }
+
         var path = filePath ?? Path.Combine(Path.GetTempPath(), $"ui-{Environment.TickCount64}.png");
         bitmap.Save(path, ImageFormat.Png);
         return Ok($"saved {path} ({width}x{height})");
@@ -207,6 +227,7 @@ public sealed class UiTools
                 return window;
             }
         }
+
         throw new McpException($"No window with \"{windowTitle}\" in its title.");
     }
 
@@ -214,16 +235,20 @@ public sealed class UiTools
     {
         var byId = window.FindFirst(TreeScope.Descendants,
             new PropertyCondition(AutomationElement.AutomationIdProperty, target));
+
         if (byId is not null)
         {
             return byId;
         }
+
         var byName = window.FindFirst(TreeScope.Descendants,
             new PropertyCondition(AutomationElement.NameProperty, target));
+
         if (byName is not null)
         {
             return byName;
         }
+
         throw new McpException($"No element with AutomationId or Name '{target}'.");
     }
 
@@ -233,10 +258,13 @@ public sealed class UiTools
         {
             return;
         }
+
         var child = TreeWalker.ControlViewWalker.GetFirstChild(element);
+
         while (child is not null)
         {
             var info = child.Current;
+
             if (!string.IsNullOrEmpty(info.AutomationId) || !string.IsNullOrEmpty(info.Name))
             {
                 results.Add(new
@@ -249,6 +277,7 @@ public sealed class UiTools
                         : null,
                 });
             }
+
             Walk(child, depth + 1, results);
             child = TreeWalker.ControlViewWalker.GetNextSibling(child);
         }
@@ -262,11 +291,13 @@ public sealed class UiTools
             var cellText = cell.TryGetCurrentPattern(ValuePattern.Pattern, out var value)
                 ? ((ValuePattern)value).Current.Value
                 : cell.Current.Name;
+
             if (cellText?.Contains(rowText, StringComparison.OrdinalIgnoreCase) == true)
             {
                 return true;
             }
         }
+
         return false;
     }
 

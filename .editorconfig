@@ -58,6 +58,16 @@ csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 
+# Blank lines
+dotnet_style_allow_multiple_blank_lines_experimental = false
+dotnet_style_allow_statement_immediately_after_block_experimental = false
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false
+csharp_style_allow_embedded_statements_on_same_line_experimental = false
+dotnet_diagnostic.IDE2000.severity = error
+dotnet_diagnostic.IDE2001.severity = error
+dotnet_diagnostic.IDE2002.severity = error
+dotnet_diagnostic.IDE2003.severity = error
+
 # Pattern matching
 csharp_style_pattern_matching_over_is_with_cast_check = true:error
 csharp_style_pattern_matching_over_as_with_null_check = true:warning

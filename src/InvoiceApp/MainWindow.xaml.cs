@@ -15,11 +15,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
         ItemsGrid.ItemsSource = _items;
 
         // Two sample rows, so a run can read totals back before it types anything.
         _items.Add(new OrderItem { Description = "Widget", Quantity = 2, UnitPrice = 19.90m });
         _items.Add(new OrderItem { Description = "Gadget", Quantity = 1, UnitPrice = 49.00m });
+
         RecalculateTotals();
     }
 
@@ -29,17 +31,19 @@ public partial class MainWindow : Window
         // the text is empty or not a number, and the row is added anyway. The card
         // validate-quantity-and-price asks for the check, and the agent run adds it.
         int.TryParse(NewQuantityTextBox.Text, out var quantity);
-        decimal.TryParse(NewUnitPriceTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture,
-            out var unitPrice);
+        decimal.TryParse(NewUnitPriceTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var unitPrice);
+
         _items.Add(new OrderItem
         {
             Description = NewDescriptionTextBox.Text,
             Quantity = quantity,
             UnitPrice = unitPrice,
         });
+
         NewDescriptionTextBox.Clear();
         NewQuantityTextBox.Text = "1";
         NewUnitPriceTextBox.Text = "0";
+
         RecalculateTotals();
     }
 
@@ -50,6 +54,7 @@ public partial class MainWindow : Window
         if (ItemsGrid.SelectedItem is OrderItem item)
         {
             _items.Remove(item);
+
             RecalculateTotals();
         }
     }
@@ -68,12 +73,16 @@ public partial class MainWindow : Window
         {
             return;
         }
+
         var subtotal = 0m;
+
         foreach (var item in _items)
         {
             subtotal += item.LineTotal;
         }
+
         SubtotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
+
         // NOTE: The discount is read but not applied on purpose; the total equals the subtotal.
         // The card total-ignores-the-discount describes the bug, and the agent run fixes it.
         TotalText.Text = subtotal.ToString("N2", CultureInfo.CurrentCulture);
