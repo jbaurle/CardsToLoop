@@ -27,19 +27,11 @@ public partial class MainWindow : Window
 
     private void AddItemButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(NewQuantityTextBox.Text, out var quantity) || quantity <= 0)
-        {
-            ShowValidationError("The quantity must be a whole number greater than 0.");
-
-            return;
-        }
-
-        if (!decimal.TryParse(NewUnitPriceTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var unitPrice) || unitPrice < 0)
-        {
-            ShowValidationError("The unit price must be a number that is not negative.");
-
-            return;
-        }
+        // NOTE: Quantity and price are not validated on purpose. TryParse leaves 0 when
+        // the text is empty or not a number, and the row is added anyway. The card
+        // validate-quantity-and-price asks for the check, and the agent run adds it.
+        int.TryParse(NewQuantityTextBox.Text, out var quantity);
+        decimal.TryParse(NewUnitPriceTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var unitPrice);
 
         _items.Add(new OrderItem
         {
@@ -70,11 +62,6 @@ public partial class MainWindow : Window
     private void DiscountTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         RecalculateTotals();
-    }
-
-    private void ShowValidationError(string message)
-    {
-        MessageBox.Show(this, message, "Invalid item", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
     private void RecalculateTotals()
