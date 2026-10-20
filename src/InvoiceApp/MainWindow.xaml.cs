@@ -49,21 +49,10 @@ public partial class MainWindow : Window
 
     private void DeleteItemButton_Click(object sender, RoutedEventArgs e)
     {
+        // NOTE: Deletes without asking on purpose. The card delete-asks-for-confirmation
+        // asks for a confirmation dialog, and the agent run adds it.
         if (ItemsGrid.SelectedItem is OrderItem item)
         {
-            var answer = MessageBox.Show(
-                this,
-                $"Delete \"{item.Description}\"?",
-                "Delete item",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question,
-                MessageBoxResult.No);
-
-            if (answer != MessageBoxResult.Yes)
-            {
-                return;
-            }
-
             _items.Remove(item);
 
             RecalculateTotals();
